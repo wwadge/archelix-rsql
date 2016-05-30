@@ -21,54 +21,80 @@
 */
 package com.github.vineey.rql.querydsl.filter.converter.value;
 
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.github.vineey.rql.querydsl.filter.UnsupportedRqlOperatorException;
 import com.github.vineey.rql.querydsl.filter.converter.ConverterConstant;
 import com.github.vineey.rql.querydsl.filter.util.Enums;
+import com.google.common.collect.Lists;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.NullExpression;
+import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.EnumPath;
+import com.querydsl.core.types.dsl.Expressions;
 import cz.jirutka.rsql.parser.ast.ComparisonNode;
 import cz.jirutka.rsql.parser.ast.ComparisonOperator;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import static com.querydsl.core.types.dsl.Expressions.nullExpression;
 import static cz.jirutka.rsql.parser.ast.RSQLOperators.*;
 
 /**
  * @author vrustia on 9/26/2015.
  */
 public class EnumPathToValueConverter implements PathToValueConverter<EnumPath> {
+
     @Override
-    public BooleanExpression evaluate(EnumPath path, ComparisonNode comparisonNode) {
-        ComparisonOperator comparisonOperator = comparisonNode.getOperator();
-        List<String> arguments = comparisonNode.getArguments();
+    public BooleanExpression evaluate(EnumPath path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
+        List<Expression> arg = convertToExpression(path, comparisonNode, param);
+        ComparisonOperator operator = comparisonNode.getOperator();
 
-        List<Enum> enumArgs = convertArgumentsToEnum(path, arguments);
+        switch (arg.size()) {
+            case 0:
+                return path.isNull();
+            case 1:
+                Expression firstArg = arg.get(0);
+                if (EQUAL.equals(operator)) {
+                    return (firstArg instanceof NullExpression) ? path.isNull() : path.eq(firstArg);
+                } else if (NOT_EQUAL.equals(operator)) {
+                    return (firstArg instanceof NullExpression) ? path.isNotNull() : path.ne(firstArg);
+                }
 
-        Enum firstEnumArg = enumArgs.get(0);
-        boolean firstArgEqualsNull = firstEnumArg == null;
+                break;
+            default:
+                if (IN.equals(operator)) {
+                    return path.in(arg);
+                } else if (NOT_IN.equals(operator)) {
+                    return path.notIn(arg);
+                }
 
-        if (EQUAL.equals(comparisonOperator)) {
-            return firstArgEqualsNull ? path.isNull() : path.eq(firstEnumArg);
-        } else if (NOT_EQUAL.equals(comparisonOperator)) {
-            return firstArgEqualsNull ? path.isNotNull() : path.ne(firstEnumArg);
-        } else if (IN.equals(comparisonOperator)) {
-            return path.in(enumArgs);
-        } else if (NOT_IN.equals(comparisonOperator)) {
-            return path.notIn(enumArgs);
         }
+
         throw new UnsupportedRqlOperatorException(comparisonNode, path.getClass());
     }
 
-    private List<Enum> convertArgumentsToEnum(EnumPath path, List<String> arguments) {
-        List<Enum> enumArgs = new ArrayList<>();
-        if (arguments.size() > 0) {
-            for (String argument : arguments) {
-                boolean equalsNullConstant = ConverterConstant.NULL.equalsIgnoreCase(argument);
-                Enum enumArg = equalsNullConstant ? null : Enums.getEnum(path.getType(), argument);
-                enumArgs.add(enumArg);
+    private List<Expression> convertToExpression(EnumPath path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
+
+
+        List<Expression> result = Lists.newArrayList();
+
+        for (String arg : comparisonNode.getArguments()) {
+
+            if (arg != null) {
+                Path rhsPath = param.getMapping().get(arg);
+
+                if (rhsPath != null) {
+                    result.add(Expressions.asEnum(rhsPath));
+                } else if (!ConverterConstant.NULL.equalsIgnoreCase(arg)) {
+                    result.add(Expressions.asEnum((Enum) Enums.getEnum(path.getType(), arg)));
+                } else {
+                    result.add(nullExpression());
+                }
+
             }
         }
-        return enumArgs;
+        return result;
     }
+
 }

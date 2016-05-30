@@ -21,6 +21,7 @@
 */
 package com.github.vineey.rql.querydsl.filter.converter.value;
 
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.github.vineey.rql.querydsl.filter.UnsupportedRqlOperatorException;
 import com.github.vineey.rql.querydsl.filter.converter.ConverterConstant;
 import com.github.vineey.rql.querydsl.filter.util.ConverterUtil;
@@ -39,7 +40,7 @@ import static cz.jirutka.rsql.parser.ast.RSQLOperators.*;
  */
 public class NumberPathToValueConverter implements PathToValueConverter<NumberPath> {
     @Override
-    public BooleanExpression evaluate(NumberPath path, ComparisonNode comparisonNode) {
+    public BooleanExpression evaluate(NumberPath path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
         ComparisonOperator comparisonOperator = comparisonNode.getOperator();
         List<String> arguments = comparisonNode.getArguments();
         Number firstNumberArg = convertToNumber(path, arguments.get(0));

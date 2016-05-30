@@ -71,6 +71,23 @@ public class QuerydslFilterBuilder_EnumPath_Test {
     }
 
     @Test
+    public void testParse_EnumEqualsWithRHS() {
+        String status = "status";
+        String argument = "status";
+        String rqlFilter = RSQLUtil.build(status, RSQLOperators.EQUAL, argument);
+        FilterParser filterParser = new DefaultFilterParser();
+        Predicate predicate = filterParser.parse(rqlFilter, withBuilderAndParam(new QuerydslFilterBuilder(), createFilterParam(status, argument)));
+        assertNotNull(predicate);
+        assertTrue(predicate instanceof BooleanOperation);
+        BooleanOperation booleanOperation = (BooleanOperation) predicate;
+
+        assertEquals(2, booleanOperation.getArgs().size());
+        assertEquals(status, booleanOperation.getArg(0).toString());
+        assertEquals(argument, booleanOperation.getArg(1).toString());
+        assertEquals(Ops.EQ, booleanOperation.getOperator());
+    }
+
+    @Test
     public void testParse_EnumIsNull() {
         String status = "status";
         String rqlFilter = RSQLUtil.build(status, RSQLOperators.EQUAL, NULL);
@@ -184,6 +201,7 @@ public class QuerydslFilterBuilder_EnumPath_Test {
         querydslFilterParam.setMapping(mapping);
         return querydslFilterParam;
     }
+
 
     @Test
     public void testParse_EnumIn_InvalidEnum() {

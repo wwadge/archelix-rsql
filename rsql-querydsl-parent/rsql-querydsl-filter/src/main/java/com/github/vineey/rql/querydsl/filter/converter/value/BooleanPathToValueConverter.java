@@ -17,13 +17,19 @@
 * SOFTWARE. *  */
 package com.github.vineey.rql.querydsl.filter.converter.value;
 
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.github.vineey.rql.querydsl.filter.UnsupportedRqlOperatorException;
 import com.github.vineey.rql.querydsl.filter.converter.ConverterConstant;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.NullExpression;
+import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.BooleanPath;
 import cz.jirutka.rsql.parser.ast.ComparisonNode;
 import cz.jirutka.rsql.parser.ast.ComparisonOperator;
 
+import static com.querydsl.core.types.dsl.Expressions.asBoolean;
+import static com.querydsl.core.types.dsl.Expressions.nullExpression;
 import static cz.jirutka.rsql.parser.ast.RSQLOperators.EQUAL;
 import static cz.jirutka.rsql.parser.ast.RSQLOperators.NOT_EQUAL;
 
@@ -32,11 +38,11 @@ import static cz.jirutka.rsql.parser.ast.RSQLOperators.NOT_EQUAL;
  */
 public class BooleanPathToValueConverter implements PathToValueConverter<BooleanPath> {
     @Override
-    public BooleanExpression evaluate(BooleanPath path, ComparisonNode comparisonNode) {
-        Boolean arg = convertToBoolean(comparisonNode);
+    public BooleanExpression evaluate(BooleanPath path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
+        Expression arg = convertToExpression(comparisonNode, param);
         ComparisonOperator operator = comparisonNode.getOperator();
 
-        if (arg == null) {
+        if (arg == null || arg instanceof NullExpression) {
             return path.isNull();
         } else {
             if (EQUAL.equals(operator)) {
@@ -49,8 +55,22 @@ public class BooleanPathToValueConverter implements PathToValueConverter<Boolean
         throw new UnsupportedRqlOperatorException(comparisonNode, path.getClass());
     }
 
-    private Boolean convertToBoolean(ComparisonNode comparisonNode) {
-        String firstArg = comparisonNode.getArguments().get(0);
-        return ConverterConstant.NULL.equalsIgnoreCase(firstArg) ? null : Boolean.valueOf(firstArg);
+    private Expression convertToExpression(ComparisonNode comparisonNode, QuerydslFilterParam param) {
+        String arg = comparisonNode.getArguments().get(0);
+
+        Expression exp = nullExpression();
+
+        if (arg != null) {
+            Path rhsPath = param.getMapping().get(arg);
+
+            if (rhsPath != null) {
+                exp = asBoolean(rhsPath);
+            } else if (!ConverterConstant.NULL.equalsIgnoreCase(arg)) {
+                exp = asBoolean(Boolean.valueOf(arg));
+            }
+
+        }
+        return exp;
     }
+
 }

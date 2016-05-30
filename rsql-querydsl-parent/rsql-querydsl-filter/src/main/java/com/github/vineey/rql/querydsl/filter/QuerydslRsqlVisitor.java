@@ -80,6 +80,6 @@ public class QuerydslRsqlVisitor implements RSQLVisitor<Predicate, QuerydslFilte
         if(path == null) {
             throw new PathNotFoundException("Unknown path["+selector+"] used in the filter expression.");
         }
-        return PathToValueConverterContext.getOperator(path).evaluate(path, node);
+        return PathToValueConverterContext.getOperator(path).evaluate(path, node, param);
     }
 }

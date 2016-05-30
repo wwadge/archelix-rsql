@@ -17,6 +17,7 @@
 * SOFTWARE. *  */
  package com.github.vineey.rql.querydsl.filter.converter.value;
 
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.github.vineey.rql.querydsl.filter.UnsupportedRqlOperatorException;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -33,7 +34,7 @@ import static cz.jirutka.rsql.parser.ast.RSQLOperators.*;
  */
 public abstract class AbstractTimeRangePathToValueConverter<RANGE extends Comparable, PATH extends TemporalExpression> implements PathToValueConverter<PATH> {
     @Override
-    public BooleanExpression evaluate(PATH path, ComparisonNode comparisonNode) {
+    public BooleanExpression evaluate(PATH path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
         ComparisonOperator comparisonOperator = comparisonNode.getOperator();
         List<String> arguments = comparisonNode.getArguments();
         Comparable firstTimeArg = convertArgument((Class<RANGE>) path.getType(), arguments.get(0));

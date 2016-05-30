@@ -21,6 +21,7 @@
 */
  package com.github.vineey.rql.querydsl.filter.converter.value;
 
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.github.vineey.rql.querydsl.filter.UnsupportedRqlOperatorException;
 import com.github.vineey.rql.querydsl.filter.converter.ConverterConstant;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -40,7 +41,7 @@ public class StringPathToValueConverter implements PathToValueConverter<StringPa
     private static final String WILDCARD = "*";
 
     @Override
-    public BooleanExpression evaluate(StringPath path, ComparisonNode comparisonNode) {
+    public BooleanExpression evaluate(StringPath path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
         ComparisonOperator comparisonOperator = comparisonNode.getOperator();
         List<String> arguments = comparisonNode.getArguments();
         String firstArg = arguments.get(0);

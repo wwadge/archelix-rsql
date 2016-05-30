@@ -18,6 +18,7 @@
 package com.github.vineey.rql.querydsl.filter.converter.value;
 
 import com.github.vineey.rql.core.util.CollectionUtils;
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.github.vineey.rql.querydsl.filter.UnsupportedRqlOperatorException;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CollectionPathBase;
@@ -36,7 +37,7 @@ import static com.github.vineey.rql.filter.operator.QRSQLOperators.SIZE_NOT_EQ;
  */
 public abstract class AbstractCollectionPathToValueConverter<E, Q extends SimpleExpression<? super E>, COLLECTION extends Collection<E>, PATH extends CollectionPathBase<COLLECTION, E, Q>> implements PathToValueConverter<PATH> {
     @Override
-    public BooleanExpression evaluate(PATH path, ComparisonNode comparisonNode) {
+    public BooleanExpression evaluate(PATH path, ComparisonNode comparisonNode, QuerydslFilterParam param) {
         ComparisonOperator comparisonOperator = comparisonNode.getOperator();
         String argument = getArgument(comparisonNode);
 

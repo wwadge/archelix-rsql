@@ -24,6 +24,7 @@
 */
 package com.github.vineey.rql.querydsl.filter.converter;
 
+import com.github.vineey.rql.querydsl.filter.QuerydslFilterParam;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import cz.jirutka.rsql.parser.ast.ComparisonNode;
@@ -32,5 +33,5 @@ import cz.jirutka.rsql.parser.ast.ComparisonNode;
  * @author vrustia - 5/23/16.
  */
 public interface PathConverter<T extends Expression> {
-    BooleanExpression evaluate(T path, ComparisonNode comparisonNode);
+    BooleanExpression evaluate(T path, ComparisonNode comparisonNode, QuerydslFilterParam param);
 }
